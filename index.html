@@ -1,16 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Welcome</title>
+    <style>
+        /* Písmena ve slově "WELCOME" jsou zobrazena jako bloky */
+        
+        .letter {
+            display: inline-block;
+            font-size: 3em;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Hello World</h1>
-    <p>I'm hosted with GitHub Pages.</p>
+    <h1>
+        <!-- Slovo "WELCOME" je rozděleno na jednotlivé písmena, každé vlastním elementem span s vlastností class "letter" -->
+        <span class="letter">W</span>
+        <span class="letter">E</span>
+        <span class="letter">L</span>
+        <span class="letter">C</span>
+        <span class="letter">O</span>
+        <span class="letter">M</span>
+        <span class="letter">E</span>
+    </h1>
 </body>
+<script>
+    // JavaScript kód pro generování náhodných barev pro každé písmeno
+    const letters = document.querySelectorAll('.letter');
+    for (let i = 0; i < letters.length; i++) {
+        letters[i].style.color = getRandomColor();
+    }
+
+    function getRandomColor() {
+        let letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+    // JavaScript kód pro periodickou změnu barvy každého písmena
+    setInterval(function() {
+        for (let i = 0; i < letters.length; i++) {
+            letters[i].style.color = getRandomColor();
+        }
+    }, 1000);
+</script>
 
 </html>
