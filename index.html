@@ -1,52 +1,135 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Detox Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Písmena ve slově "WELCOME" jsou zobrazena jako bloky */
-        
-        .letter {
-            display: inline-block;
-            font-size: 3em;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
+<body class="bg-stone-50 text-stone-800 min-h-screen flex items-center justify-center p-4">
 
-<body>
-    <h1>
-        <!-- Slovo "WELCOME" je rozděleno na jednotlivé písmena, každé vlastním elementem span s vlastností class "letter" -->
-        <span class="letter">W</span>
-        <span class="letter">E</span>
-        <span class="letter">L</span>
-        <span class="letter">C</span>
-        <span class="letter">O</span>
-        <span class="letter">M</span>
-        <span class="letter">E</span>
-    </h1>
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-stone-100">
+        <div class="bg-stone-800 p-8 text-center text-white">
+            <i class="fas fa-mug-hot text-4xl mb-4 text-amber-200"></i>
+            <h1 class="text-2xl font-bold uppercase tracking-wider">Kávový Detox</h1>
+            <p class="text-stone-400 text-sm mt-1" id="start-date-display">Načítání...</p>
+        </div>
+
+        <div class="p-8">
+            <div class="grid grid-cols-4 gap-2 text-center mb-8">
+                <div class="bg-stone-100 rounded-xl p-3">
+                    <span id="days" class="block text-2xl font-bold text-stone-800">0</span>
+                    <span class="text-[10px] uppercase text-stone-500 font-semibold">Dny</span>
+                </div>
+                <div class="bg-stone-100 rounded-xl p-3">
+                    <span id="hours" class="block text-2xl font-bold text-stone-800">0</span>
+                    <span class="text-[10px] uppercase text-stone-500 font-semibold">Hod</span>
+                </div>
+                <div class="bg-stone-100 rounded-xl p-3">
+                    <span id="minutes" class="block text-2xl font-bold text-stone-800">0</span>
+                    <span class="text-[10px] uppercase text-stone-500 font-semibold">Min</span>
+                </div>
+                <div class="bg-stone-100 rounded-xl p-3">
+                    <span id="seconds" class="block text-2xl font-bold text-stone-800">0</span>
+                    <span class="text-[10px] uppercase text-stone-500 font-semibold">Sek</span>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <div class="flex justify-between text-xs mb-2 font-semibold text-stone-500">
+                    <span>MILNÍK: 7 DNÍ</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="w-full bg-stone-100 rounded-full h-3">
+                    <div id="progress-bar" class="bg-amber-500 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-8">
+                <p id="quote" class="text-sm italic text-stone-700">"Tvoje tělo ti poděkuje (až tě přestane bolet hlava)."</p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button onclick="resetCounter()" class="w-full bg-stone-800 hover:bg-stone-900 text-white font-bold py-3 px-6 rounded-xl transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fas fa-redo-alt text-xs"></i> RESETOVAT (PRÁVĚ JSEM MĚL KÁVU)
+                </button>
+                <button onclick="setCustomDate()" class="text-stone-400 hover:text-stone-600 text-xs font-semibold py-2">
+                    NASTAVIT VLASTNÍ ČAS ZAČÁTKU
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let startTime = localStorage.getItem('detoxStartTime');
+
+        if (!startTime) {
+            resetCounter();
+        }
+
+        function resetCounter() {
+            if (startTime && !confirm("Opravdu chceš resetovat svůj pokrok?")) return;
+            startTime = new Date().getTime();
+            localStorage.setItem('detoxStartTime', startTime);
+            updateDisplay();
+        }
+
+        function setCustomDate() {
+            const input = prompt("Zadej datum a čas začátku (formát: RRRR-MM-DD HH:MM)");
+            if (input) {
+                const newDate = new Date(input).getTime();
+                if (!isNaN(newDate)) {
+                    startTime = newDate;
+                    localStorage.setItem('detoxStartTime', startTime);
+                    updateDisplay();
+                } else {
+                    alert("Neplatný formát. Zkus to znovu.");
+                }
+            }
+        }
+
+        function updateDisplay() {
+            const now = new Date().getTime();
+            const diff = now - startTime;
+
+            // Výpočty času
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+            // Update DOM
+            document.getElementById('days').innerText = d;
+            document.getElementById('hours').innerText = h;
+            document.getElementById('minutes').innerText = m;
+            document.getElementById('seconds').innerText = s;
+
+            // Start date display
+            const startDateObj = new Date(parseInt(startTime));
+            document.getElementById('start-date-display').innerText = `Odstartováno: ${startDateObj.toLocaleString('cs-CZ')}`;
+
+            // Progress bar (cíl 7 dní)
+            const targetDays = 7;
+            const progress = Math.min((diff / (targetDays * 24 * 60 * 60 * 1000)) * 100, 100);
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-percent').innerText = `${Math.floor(progress)}%`;
+
+            // Dynamické hlášky
+            const quoteEl = document.getElementById('quote');
+            if (d < 1) quoteEl.innerText = "První hodiny jsou nejtěžší. Vydrž!";
+            else if (d < 3) quoteEl.innerText = "Kofein opouští systém. Možná tě bolí hlava, ale to přejde.";
+            else if (d < 7) quoteEl.innerText = "Hluboký spánek se vrací. Už v tom začínáš chodit!";
+            else quoteEl.innerText = "Jsi borec! Tvoje tělo je teď čistý chrám (bez kofeinu).";
+        }
+
+        // Update každou sekundu
+        setInterval(updateDisplay, 1000);
+        updateDisplay();
+    </script>
 </body>
-<script>
-    // JavaScript kód pro generování náhodných barev pro každé písmeno
-    const letters = document.querySelectorAll('.letter');
-    for (let i = 0; i < letters.length; i++) {
-        letters[i].style.color = getRandomColor();
-    }
-
-    function getRandomColor() {
-        let letters = '0123456789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-    }
-    // JavaScript kód pro periodickou změnu barvy každého písmena
-    setInterval(function() {
-        for (let i = 0; i < letters.length; i++) {
-            letters[i].style.color = getRandomColor();
-        }
-    }, 1000);
-</script>
-
 </html>
