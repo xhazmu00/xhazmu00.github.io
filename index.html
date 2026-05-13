@@ -472,7 +472,7 @@ async function showPoliticianDetail(id) {
                    <p class="text-[10px] uppercase font-black text-slate-400 mb-1 text-center leading-tight">Průměrný<br>verdikt</p>
                    <span class="text-4xl font-black ${avg >= 4 ? 'text-red-600' : avg <= 1.5 ? 'text-emerald-600' : 'text-slate-800'}">${avg}</span>
                    <p class="text-[9px] text-slate-400 mt-1">${count} hodnotících</p>
-                   ${currentUser ? `<button onclick="openAddScandalModal('${id}', '${scandalId}')" class="mt-4 text-xs text-slate-300 hover:text-slate-600 italic">Upravit text</button>` : ''}
+                   ${currentUser ? `<button onclick="openAddScandalModal('${id}', '${scandalId}')" class="mt-4 text-xs text-slate-600 hover:text-slate-800 italic">EDITOVAT KAUZU</button>` : ''}
                </div>
            </div>
        </div>`;
