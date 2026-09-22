@@ -1,1180 +1,799 @@
 <!DOCTYPE html>
-<html lang="cs">
-
-
+<html lang="cs" class="dark">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Morální maják | Transparentní evidence kauz</title>
-   <script src="https://cdn.tailwindcss.com"></script>
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
-   <style>
-       body {
-           font-family: 'Inter', sans-serif;
-       }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kávový Detox</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts for SF Pro substitute (Inter with tight tracking) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Canvas Confetti for milestones -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-       .glass {
-           background: rgba(255, 255, 255, 0.8);
-           backdrop-filter: blur(12px);
-       }
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Inter', 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'sans-serif'],
+                    },
+                    colors: {
+                        coffee: {
+                            50: '#fdf8f6',
+                            100: '#f2e8e5',
+                            400: '#e0a96d',
+                            500: '#d97706',
+                            600: '#b45309',
+                            900: '#201612',
+                        },
+                        apple: {
+                            bg: '#000000',
+                            card: 'rgba(255, 255, 255, 0.04)',
+                            cardHover: 'rgba(255, 255, 255, 0.07)',
+                            border: 'rgba(255, 255, 255, 0.1)',
+                            amber: '#ff9f0a',
+                            green: '#30d158',
+                            blue: '#0a84ff',
+                            red: '#ff453a'
+                        }
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 4s infinite ease-in-out',
+                        'float': 'float 6s infinite ease-in-out',
+                        'breathe': 'breathe 12s infinite ease-in-out',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { opacity: 0.3, transform: 'scale(1)' },
+                            '50%': { opacity: 0.6, transform: 'scale(1.08)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        },
+                        breathe: {
+                            '0%, 100%': { transform: 'scale(0.85)', opacity: 0.6 },
+                            '33%': { transform: 'scale(1.25)', opacity: 1 },
+                            '66%': { transform: 'scale(1.25)', opacity: 0.9 },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
+    <style>
+        /* Base Apple Styling */
+        body {
+            background-color: #000000;
+            color: #f5f5f7;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
 
-       .card-hover {
-           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-       }
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
 
-       .card-hover:hover {
-           transform: translateY(-5px);
-           box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-       }
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
 
+        /* Apple Fitness Ring Styling */
+        .ring-circle {
+            transition: stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
 
-       .bg-gradient-soft {
-           background: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
-       }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #404040;
+        }
 
-
-       input[type="range"]::-webkit-slider-thumb {
-           -webkit-appearance: none;
-           appearance: none;
-           width: 18px;
-           height: 18px;
-           background: #dc2626;
-           cursor: pointer;
-           border-radius: 50%;
-           border: 2px solid white;
-       }
-   </style>
+        /* Modal backdrop transition */
+        .modal-overlay {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: opacity 0.3s ease;
+        }
+    </style>
 </head>
-
-
-<body class="bg-gradient-soft min-h-screen flex flex-col text-slate-900">
-
-
-   <!-- Luxusní Navigace -->
-   <nav class="glass border-b border-slate-200 sticky top-0 z-50 py-4">
-       <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-           <div class="flex items-center gap-3 cursor-pointer group" onclick="showDashboard()">
-               <div
-                   class="bg-slate-950 text-white p-2 rounded-lg group-hover:rotate-12 transition-transform shadow-lg shadow-blue-900/20">
-                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                       stroke="currentColor">
-                       <!-- Základna a věž majáku -->
-                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                           d="M9 21h6m-5-2h4m-3-12l-1 14h2l-1-14zM12 3v2" />
-                       <!-- Paprsky světla -->
-                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                           d="M7 6L5 5m12 1l2-1M4 10h2m12 0h2" />
-                   </svg>
-               </div>
-               <h1 class="text-xl font-extrabold tracking-tighter uppercase text-slate-950">Morální<span
-                       class="text-blue-600">Maják</span></h1>
-           </div>
-
-
-           <div class="relative w-full md:w-1/3">
-               <input type="text" id="searchInput" placeholder="Hledat jméno, stranu nebo téma..."
-                   class="w-full pl-10 pr-4 py-2.5 rounded-full bg-slate-100 border-none focus:ring-2 focus:ring-blue-500 transition-all text-sm outline-none">
-               <span class="absolute left-3.5 top-3 text-slate-400">
-                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                       stroke="currentColor">
-                       <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" />
-                   </svg>
-               </span>
-           </div>
-
-
-           <div id="authSection" class="flex items-center gap-4">
-               <button onclick="openLoginModal()" id="btnLogin"
-                   class="text-sm font-semibold hover:text-blue-600 transition-colors">Login</button>
-               <div id="userInfo"
-                   class="hidden flex items-center gap-4 bg-white p-1.5 pl-4 rounded-full border border-slate-200 shadow-sm">
-                   <button onclick="togglePrivateMode()" id="btnPrivateMode"
-                       class="text-[10px] font-black px-3 py-1.5 rounded-full bg-slate-100 hover:bg-red-100 hover:text-red-600 transition-all">
-                       PRIVATE: OFF
-                   </button>
-                   <span id="userNameDisplay" class="text-xs font-bold uppercase tracking-wider text-slate-500"></span>
-                   <button onclick="logout()"
-                       class="bg-slate-950 text-white px-4 py-1.5 rounded-full text-xs hover:bg-slate-800 transition-colors">Odhlásit</button>
-               </div>
-           </div>
-       </div>
-   </nav>
-
-
-   <!-- Hlavní obsah -->
-   <main class="container mx-auto py-12 px-6 flex-grow">
-
-
-       <!-- Dashboard -->
-       <section id="view-dashboard">
-           <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-               <div>
-                   <h2 class="text-4xl font-black text-slate-950 mb-2">Veřejní činitelé</h2>
-                   <p class="text-slate-500 max-w-lg italic">Monitorujeme integritu a etiku české politické scény.</p>
-               </div>
-               <button onclick="openAddPoliticianModal()"
-                   class="admin-only hidden bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">+
-                   Nový profil</button>
-           </div>
-           <div id="politiciansGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
-       </section>
-
-
-       <!-- Detail Politika -->
-       <section id="view-detail-politician" class="hidden"></section>
-
-
-       <!-- Detail Kauzy -->
-       <section id="view-detail-scandal" class="hidden"></section>
-   </main>
-
-
-   <!-- MODALY -->
-
-
-   <!-- Login Modal -->
-   <div id="loginModal"
-       class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm hidden flex items-center justify-center z-[100] p-4">
-       <div class="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl">
-           <h2 class="text-2xl font-black mb-6">Login</h2>
-           <div class="space-y-4">
-               <input type="email" id="loginEmail" placeholder="ID editora"
-                   class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
-               <input type="password" id="loginPass" placeholder="Heslo"
-                   class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
-               <div class="flex flex-col gap-3 pt-4">
-                   <button onclick="handleLogin()"
-                       class="w-full py-3 bg-slate-950 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">Přihlásit</button>
-                   <button onclick="closeLoginModal()" class="w-full py-2 text-slate-400 text-sm">Zavřít</button>
-               </div>
-           </div>
-       </div>
-   </div>
-
-
-   <!-- Modal Politik -->
-   <div id="politicianModal"
-       class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm hidden flex items-center justify-center z-[100] p-4">
-       <div class="bg-white p-8 rounded-3xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl">
-           <h2 id="pModalTitle" class="text-2xl font-black mb-8 border-b pb-4">Správa profilu</h2>
-           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div class="md:col-span-2">
-                   <label class="text-[10px] uppercase font-black text-slate-400 ml-2">Celé jméno</label>
-                   <input type="text" id="pName"
-                       class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none mt-1">
-               </div>
-
-
-               <div class="md:col-span-2">
-                   <label class="text-[10px] uppercase font-black text-slate-400 ml-2">URL Veřejné Fotografie
-                       (Výchozí)</label>
-                   <input type="text" id="pPhoto2"
-                       class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none mt-1"
-                       placeholder="Reprezentativní foto...">
-               </div>
-               <div class="md:col-span-2">
-                   <label class="text-[10px] uppercase font-black text-slate-400 ml-2">URL Alternativní Fotografie
-                       (Private Mode)</label>
-                   <input type="text" id="pPhoto"
-                       class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none mt-1"
-                       placeholder="Explicitní/Satirické foto...">
-               </div>
-
-
-               <div>
-                   <label class="text-[10px] uppercase font-black text-slate-400 ml-2">Narození</label>
-                   <input type="date" id="pBirthDate"
-                       class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none mt-1">
-               </div>
-               <div>
-                   <label class="text-[10px] uppercase font-black text-slate-400 ml-2">Politické strany</label>
-                   <input type="text" id="pParties" placeholder="ODS, ANO..."
-                       class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none mt-1">
-               </div>
-               <div class="md:col-span-2">
-                   <label class="text-[10px] uppercase font-black text-slate-400 ml-2">Funkce</label>
-                   <input type="text" id="pRoles" placeholder="Poslanec, Hejtman..."
-                       class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none mt-1">
-               </div>
-               <div class="md:col-span-2">
-                   <label class="text-[10px] uppercase font-black text-slate-400 ml-2">Hashtagy</label>
-                   <input type="text" id="pHashtags" placeholder="korupce, dotace..."
-                       class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none mt-1">
-               </div>
-           </div>
-           <div class="flex justify-end gap-4 mt-10">
-               <button onclick="closePoliticianModal()" class="px-6 py-3 text-slate-400 font-bold">Zrušit</button>
-               <button onclick="savePolitician()"
-                   class="px-10 py-3 bg-slate-950 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">Uložit
-                   profil</button>
-           </div>
-       </div>
-   </div>
-
-
-   <!-- Modal Kauza -->
-   <div id="scandalModal"
-       class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm hidden flex items-center justify-center z-[100] p-4">
-       <div class="bg-white p-8 rounded-3xl w-full max-w-xl shadow-2xl">
-           <h2 id="sModalTitle" class="text-2xl font-black mb-8 border-b pb-4 text-red-600">Nahlásit záznam</h2>
-           <div class="space-y-4">
-               <div>
-                   <label class="text-[10px] uppercase font-black text-slate-400 ml-2">Název kauzy</label>
-                   <input type="text" id="sTitle"
-                       class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-red-500 outline-none mt-1">
-               </div>
-               <div>
-                   <label class="text-[10px] uppercase font-black text-slate-400 ml-2">Detailní popis</label>
-                   <textarea id="sDescription" rows="4"
-                       class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-red-500 outline-none mt-1"></textarea>
-               </div>
-
-
-               <div class="grid grid-cols-2 gap-4">
-                   <div>
-                       <label class="text-[10px] uppercase font-black text-slate-400 ml-2">Zdroje (URL)</label>
-                       <input type="text" id="sSources" placeholder="iRozhlas.cz..."
-                           class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-red-500 outline-none mt-1">
-                   </div>
-                   <div>
-                       <label class="text-[10px] uppercase font-black text-slate-400 ml-2">Štítky</label>
-                       <input type="text" id="sHashtags" placeholder="střet zájmů..."
-                           class="w-full bg-slate-50 border-none p-3 rounded-xl focus:ring-2 focus:ring-red-500 outline-none mt-1">
-                   </div>
-               </div>
-           </div>
-           <div class="flex justify-between items-center mt-10">
-               <button id="btnDeleteScandal" onclick="deleteScandal()"
-                   class="px-6 py-3 text-red-600 font-bold hover:bg-red-50 rounded-xl transition-colors hidden">Smazat</button>
-               <div class="flex gap-4 ml-auto">
-                   <button onclick="closeScandalModal()" class="px-6 py-3 text-slate-400 font-bold">Zrušit</button>
-                   <button onclick="saveScandal()"
-                       class="px-10 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200">Publikovat</button>
-               </div>
-           </div>
-       </div>
-   </div>
-
-
-   <!-- LOGIKA (BEZ ZMĚNY FUNKCIONALITY) -->
-   <script>
-       const firebaseConfig = {
-           apiKey: "AIzaSyD5g0FUzqrbZ28GXrqE26nsLNhsch1_iMM",
-           authDomain: "moralni-majak.firebaseapp.com",
-           projectId: "moralni-majak",
-           storageBucket: "moralni-majak.firebasestorage.app",
-           messagingSenderId: "1007426416806",
-           appId: "1:1007426416806:web:73b0cce1086a339ef5c467"
-       };
-       firebase.initializeApp(firebaseConfig);
-       const db = firebase.firestore();
-       const auth = firebase.auth();
-
-
-       let currentUser = null;
-       let editingPoliticianId = null;
-       let currentPoliticianIdForScandal = null;
-       let editingScandalId = null;
-       let allPoliticians = [];
-
-
-       let privateMode = false;
-
-
-       function togglePrivateMode() {
-           privateMode = !privateMode;
-           const btn = document.getElementById('btnPrivateMode');
-           btn.innerText = `PRIVATE: ${privateMode ? 'ON' : 'OFF'}`;
-           btn.classList.toggle('bg-red-600', privateMode);
-           btn.classList.toggle('text-white', privateMode);
-
-
-           // Refresh aktuálního pohledu
-           if (!document.getElementById('view-dashboard').classList.contains('hidden')) {
-               renderPoliticians(allPoliticians);
-           } else if (!document.getElementById('view-detail-politician').classList.contains('hidden')) {
-               showPoliticianDetail(currentPoliticianIdForScandal);
-           }
-       }
-
-
-       auth.onAuthStateChanged(user => {
-           currentUser = user;
-           if (user) {
-               document.getElementById('btnLogin').classList.add('hidden');
-               document.getElementById('userInfo').classList.remove('hidden');
-               document.getElementById('userNameDisplay').innerText = user.email.split('@')[0];
-               document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-           } else {
-               document.getElementById('btnLogin').classList.remove('hidden');
-               document.getElementById('userInfo').classList.add('hidden');
-               document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-           }
-           showDashboard();
-       });
-
-
-       async function handleLogin() {
-           const username = document.getElementById('loginEmail').value;
-           const pass = document.getElementById('loginPass').value;
-           try {
-               await auth.signInWithEmailAndPassword(`${username}@majak.cz`, pass);
-               closeLoginModal();
-           } catch (error) { alert("Špatné jméno nebo heslo!"); }
-       }
-       function logout() { auth.signOut(); }
-       function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
-       function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
-
-
-       function hideAllViews() {
-           ['view-dashboard', 'view-detail-politician', 'view-detail-scandal'].forEach(id => document.getElementById(id).classList.add('hidden'));
-       }
-
-
-       function calculateAge(dateStr) {
-           if (!dateStr) return "Neuvedeno";
-           const today = new Date();
-           const birth = new Date(dateStr);
-           let age = today.getFullYear() - birth.getFullYear();
-           if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
-           return age;
-       }
-       async function showDashboard() {
-           hideAllViews();
-           document.getElementById('view-dashboard').classList.remove('hidden');
-           const grid = document.getElementById('politiciansGrid');
-           grid.innerHTML = '<div class="col-span-full py-20 text-center"><div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600"></div></div>';
-
-
-           const snapshot = await db.collection('politicians').get();
-           allPoliticians = [];
-
-
-           for (const doc of snapshot.docs) {
-               const p = doc.data();
-               const sSnap = await db.collection('scandals').where('politicianId', '==', doc.id).get();
-
-
-               let totalAvg = 0;
-               let scandalsWithRating = 0;
-
-
-               sSnap.forEach(s => {
-                   const data = s.data();
-                   if (data.averageRating !== undefined) {
-                       totalAvg += data.averageRating;
-                       scandalsWithRating++;
-                   }
-               });
-
-
-               // Vypočítáme celkový průměr politika (pokud nemá kauzy, zůstane null)
-               const finalScore = scandalsWithRating > 0 ? (totalAvg / scandalsWithRating).toFixed(1) : null;
-
-
-               allPoliticians.push({
-                   id: doc.id,
-                   ...p,
-                   scandalsCount: sSnap.size,
-                   globalScore: finalScore
-               });
-           }
-           renderPoliticians(allPoliticians);
-       }
-
-
-async function renderPoliticians(list) {
-   const grid = document.getElementById('politiciansGrid');
-   grid.innerHTML = '';
-
-
-   if (list.length === 0) {
-       grid.innerHTML = '<p class="col-span-full text-center py-12 text-slate-400">Žádné shody nenalezeny.</p>';
-       return;
-   }
-
-
-   // 1. NAČTENÍ DAT, VÝPOČET SKÓRE A VÝBĚR OBRÁZKU
-   const politiciansWithData = await Promise.all(list.map(async (p) => {
-       // Výběr správného obrázku hned na začátku a uložení do objektu
-       const currentImg = (privateMode && currentUser) ? p.photoUrl : (p.photoUrl2 || p.photoUrl);
-
-
-       const scandalSnap = await db.collection('scandals')
-           .where('politicianIds', 'array-contains', p.id)
-           .get();
-
-
-       const count = scandalSnap.size;
-       let score = null;
-
-
-       if (count > 0) {
-           let totalRating = 0;
-           let scandalsWithRating = 0;
-           scandalSnap.forEach(doc => {
-               const sData = doc.data();
-               if (sData.averageRating !== undefined && sData.voteCount > 0) {
-                   totalRating += sData.averageRating;
-                   scandalsWithRating++;
-               }
-           });
-           if (scandalsWithRating > 0) {
-               score = parseFloat((totalRating / scandalsWithRating).toFixed(1));
-           }
-       }
-
-
-       // Vrátíme rozšířený objekt o vypočtené hodnoty a vybraný obrázek
-       return {
-           ...p,
-           calculatedScore: score,
-           realScandalCount: count,
-           displayImg: currentImg
-       };
-   }));
-
-
-   // 2. SEŘAZENÍ (Od nejhoršího po nejlepší)
-   politiciansWithData.sort((a, b) => {
-       const scoreA = a.calculatedScore || 0;
-       const scoreB = b.calculatedScore || 0;
-       return scoreB - scoreA;
-   });
-
-
-   // 3. VYKRESLENÍ KARET
-   const politicianCards = politiciansWithData.map((p) => {
-       let scoreColor = 'bg-slate-100 text-slate-400';
-       if (p.calculatedScore !== null) {
-           const s = p.calculatedScore;
-           if (s >= 4.5) scoreColor = 'bg-red-600 text-white';
-           else if (s >= 3.5) scoreColor = 'bg-orange-500 text-white';
-           else if (s >= 2.5) scoreColor = 'bg-yellow-500 text-slate-900';
-           else if (s >= 1.5) scoreColor = 'bg-lime-400 text-slate-900';
-           else scoreColor = 'bg-emerald-600 text-white';
-       }
-
-
-       return `
-           <div class="glass card-hover rounded-[32px] overflow-hidden border border-white shadow-sm cursor-pointer flex flex-col group" onclick="showPoliticianDetail('${p.id}')">
-               <div class="relative h-60 overflow-hidden">
-                   <!-- TADY POUŽÍVÁME p.displayImg ULOŽENÉ V OBJEKTU -->
-                   <img src="${p.displayImg}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">                   
-                   <div class="absolute top-4 right-4">
-                       <div class="${scoreColor} w-12 h-12 rounded-2xl flex flex-col items-center justify-center shadow-lg border-2 border-white transition-all">
-                           <span class="text-[7px] font-black uppercase leading-none opacity-80 text-center">Známka</span>
-                           <span class="text-lg font-black leading-none">${p.calculatedScore || '—'}</span>
-                       </div>
-                   </div>
-               </div>
-
-
-               <div class="p-6 flex-grow flex flex-col text-left">
-                   <h3 class="font-black text-xl text-slate-950 mb-1 truncate">${p.name}</h3>
-                   <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-4">${p.parties[0] || 'Bez příslušnosti'}</p>
-                  
-                   <div class="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center">
-                       <div class="flex flex-col">
-                           <span class="text-[9px] uppercase font-black text-slate-400 tracking-tighter">Záznamy</span>
-                           <span class="text-sm font-bold text-slate-800">${p.realScandalCount} ${p.realScandalCount === 1 ? 'kauza' : (p.realScandalCount > 1 && p.realScandalCount < 5) ? 'kauzy' : 'kauz'}</span>
-                       </div>
-                       <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-950 group-hover:text-white transition-colors">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                               <path d="M9 5l7 7-7 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                           </svg>
-                       </div>
-                   </div>
-               </div>
-           </div>`;
-   });
-
-
-   grid.innerHTML = politicianCards.join('');
-}
-
-
-async function showPoliticianDetail(id) {
-   hideAllViews();
-   currentPoliticianIdForScandal = id;
-   const view = document.getElementById('view-detail-politician');
-  
-   // Loader
-   view.innerHTML = `
-   <div class="max-w-5xl mx-auto px-4 py-20 text-center">
-       <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-blue-600 mb-4"></div>
-       <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Načítám...</p>
-   </div>`;
-   view.classList.remove('hidden');
-
-
-   const pDoc = await db.collection('politicians').doc(id).get();
-   if (!pDoc.exists) return showDashboard();
-  
-   const p = pDoc.data();
-
-
-   // 1. DEFINICE OBRÁZKU (Dostupná pro celou funkci)
-   // Pokud je privateMode zapnutý A uživatel je přihlášen, ukaž photoUrl (ostré).
-   // Jinak ukaž photoUrl2 (veřejné). Pokud photoUrl2 neexistuje, použij photoUrl jako fallback.
-   const displayImgDetail = (privateMode && currentUser) ? p.photoUrl : (p.photoUrl2 || p.photoUrl);
-
-
-   const sSnap = await db.collection('scandals')
-       .where('politicianIds', 'array-contains', id)
-       .get();
-
-
-   // Barevná škála od 1 (Lime) do 5 (Red)
-   const ratingColors = ['bg-lime-600', 'bg-yellow-500', 'bg-amber-500', 'bg-orange-600', 'bg-red-600'];
-
-
-   const scandalsHtmlArray = await Promise.all(sSnap.docs.map(async (s) => {
-       const sd = s.data();
-       const scandalId = s.id;
-       const avg = sd.averageRating !== undefined ? sd.averageRating.toFixed(1) : "—";
-       const count = sd.voteCount || 0;
-
-
-       let userVote = null;
-       if (currentUser) {
-           const vDoc = await db.collection('votes').doc(`${currentUser.uid}_${scandalId}`).get();
-           if (vDoc.exists) userVote = vDoc.data().value;
-       }
-
-
-       let avgColorClass = 'text-slate-800';
-       if (avg !== "—") {
-           const numAvg = parseFloat(avg);
-           if (numAvg >= 4) avgColorClass = 'text-red-600';
-           else if (numAvg <= 2) avgColorClass = 'text-emerald-600';
-       }
-
-
-       return `
-<div class="glass p-6 rounded-[32px] border border-white mb-4 shadow-sm group text-left">
-   <div class="flex flex-col md:flex-row justify-between gap-6">
-       <div class="flex-1">
-           <h4 onclick="showScandalDetail('${scandalId}')" class="font-bold text-xl cursor-pointer hover:text-blue-600 mb-2">${sd.title}</h4>
-           <div class="flex flex-wrap gap-2 mb-4">
-               ${sd.hashtags.map(h => `<button onclick="filterByHashtag('${h}')" class="text-[10px] font-bold text-slate-400 italic hover:text-blue-500">#${h}</button>`).join('')}
-           </div>
-           <div class="bg-slate-50 p-3 rounded-2xl inline-flex flex-col gap-2">
-                <p class="text-[9px] uppercase font-black text-slate-400 tracking-wider ml-1">Vaše hodnocení (jako ve škole)</p>
-               <div class="flex gap-1.5">
-                   ${ratingColors.map((color, i) => `
-                       <button onclick="vote('${scandalId}', ${i+1})"
-                           class="${color} w-8 h-8 rounded-lg text-white text-xs font-black transition-all ${userVote === (i+1) ? 'ring-4 ring-slate-950 scale-110' : 'opacity-30 hover:opacity-100'}">
-                           ${i+1}
-                       </button>
-                   `).join('')}
-               </div>
-           </div>
-       </div>
-       <div class="flex flex-col items-center justify-center bg-white border border-slate-100 rounded-3xl p-4 min-w-[120px] shadow-inner">
-           <span class="text-3xl font-black ${avgColorClass}">${avg}</span>
-           <p class="text-[9px] text-slate-400 uppercase font-bold">${count} hlasů</p>
-           ${currentUser ? `
-               <div class="flex gap-2 mt-4">
-                   <button onclick="openAddScandalModal('${id}', '${scandalId}')" title="Upravit" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 text-xs">✏️</button>
-                   <button onclick="linkScandalToAnother('${scandalId}')" title="Propojit s jiným" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-xs">🔗</button>
-               </div>
-           ` : ''}
-       </div>
-   </div>
-</div>`;
-   }));
-
-
-   view.innerHTML = `
-<div class="max-w-5xl mx-auto px-4 pb-20 text-left">
-   <!-- HORNÍ LIŠTA -->
-   <div class="flex justify-between items-center mb-8">
-       <button onclick="showDashboard()" class="group flex items-center gap-2 text-slate-400 hover:text-slate-950 transition-all font-bold text-sm uppercase tracking-widest">
-           <span class="transform group-hover:-translate-x-1 transition-transform">←</span> Zpět na seznam
-       </button>
-       ${currentUser ? `
-       <div class="flex gap-3">
-           <button onclick="openAddPoliticianModal('${id}')" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all">✏️ UPRAVIT PROFIL</button>
-           <button onclick="deletePolitician('${id}')" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-all">🗑️ SMAZAT</button>
-       </div>` : ''}
-   </div>
-
-
-   <!-- KARTA POLITIKA -->
-   <div class="glass border border-white rounded-[40px] overflow-hidden shadow-xl flex flex-col md:flex-row mb-12">
-       <div class="md:w-1/3 h-80 md:h-auto">
-           <img src="${displayImgDetail}" class="w-full h-full object-cover">
-       </div>
-       <div class="p-10 md:w-2/3">
-           <h2 class="text-5xl font-black text-slate-950 mb-6 tracking-tighter">${p.name}</h2>
-           <div class="grid grid-cols-2 gap-y-4 mb-6">
-               <div>
-                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Příslušnost</p>
-                   <p class="font-bold text-slate-800">${p.parties.join(', ')}</p>
-               </div>
-               <div>
-                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Věk</p>
-                   <p class="font-bold text-slate-800">${calculateAge(p.birthDate)} let</p>
-               </div>
-               <div class="col-span-2">
-                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Významné funkce</p>
-                   <p class="font-bold text-blue-700">${p.roles && p.roles.length > 0 ? p.roles.join(' • ') : 'Bez veřejné funkce'}</p>
-               </div>
-           </div>
-           <div class="flex flex-wrap gap-2">
-               ${p.hashtags.map(h => `<button onclick="filterByHashtag('${h}')" class="bg-slate-100 px-3 py-1 rounded-lg text-xs font-bold text-slate-500 hover:bg-blue-100">#${h}</button>`).join('')}
-           </div>
-       </div>
-   </div>
-
-
-   <div class="flex justify-between items-center mb-8 px-2">
-       <h3 class="text-2xl font-black text-slate-950 italic">Registry kauz</h3>
-       ${currentUser ? `
-           <button onclick="openAddScandalModal('${id}')" class="bg-slate-950 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/20 active:scale-95 transform">
-               + PŘIDAT KAUZU
-           </button>
-       ` : ''}
-   </div>
-
-
-   <div class="space-y-4">
-       ${scandalsHtmlArray.length > 0 ? scandalsHtmlArray.join('') : '<p class="text-slate-400 italic text-center py-10">Zatím nebyly u tohoto politika nahlášeny žádné kauzy.</p>'}
-   </div>
-</div>`;
-}
-
-
-       async function addComment(scandalId) {
-           const input = document.getElementById('commentInput');
-           const text = input.value.trim();
-
-
-           if (!text) return;
-
-
-           // Zásadní kontrola: Pokud není uživatel, nepokračujeme
-           if (!currentUser) {
-               alert("Pro psaní komentářů se musíš přihlásit.");
-               return;
-           }
-
-
-           // Získání nejlepšího možného jména:
-           // 1. displayName, 2. email (část před zavináčem), 3. Anonym
-           const nameToDisplay = currentUser.displayName ||
-               (currentUser.email ? currentUser.email.split('@')[0] : 'Ověřený uživatel');
-
-
-           try {
-               await db.collection('comments').add({
-                   scandalId: scandalId,
-                   userId: currentUser.uid,
-                   userName: nameToDisplay,
-                   userPhoto: currentUser.photoURL || '', // Pokud nemá fotku, v showScandalDetail se vygeneruje avatar
-                   text: text,
-                   createdAt: firebase.firestore.FieldValue.serverTimestamp()
-               });
-
-
-               input.value = '';
-               // Okamžitý refresh, aby uživatel viděl svůj komentář
-               showScandalDetail(scandalId);
-           } catch (e) {
-               console.error("Chyba při odesílání komentáře:", e);
-               alert("Komentář se nepodařilo odeslat. Zkuste to znovu.");
-           }
-       }
-
-
-       async function showScandalDetail(scandalId) {
-           hideAllViews();
-           const view = document.getElementById('view-detail-scandal');
-
-
-           // Loader s tvým stylem
-           view.innerHTML = `<div class="max-w-3xl mx-auto py-20 text-center"><div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div></div>`;
-           view.classList.remove('hidden');
-
-
-           try {
-               const sDoc = await db.collection('scandals').doc(scandalId).get();
-               if (!sDoc.exists) return showDashboard();
-               const sd = sDoc.data();
-
-
-               // 1. NAČTENÍ MINIATUR POLITIKŮ (Aktéři)
-               let politiciansHtml = "";
-               if (sd.politicianIds && sd.politicianIds.length > 0) {
-                   const pPromises = sd.politicianIds.map(pid => db.collection('politicians').doc(pid).get());
-                   const pDocs = await Promise.all(pPromises);
-
-
-                   politiciansHtml = pDocs.map(pDoc => {
-                       if (!pDoc.exists) return "";
-                       const p = pDoc.data();
-                       return `
-                   <div onclick="showPoliticianDetail('${pDoc.id}')" class="flex items-center gap-2 bg-white border border-slate-100 p-2 pr-4 rounded-2xl cursor-pointer hover:bg-blue-50 transition-all shadow-sm">
-                       <img src="${p.photoUrl}" class="w-8 h-8 rounded-lg object-cover">
-                       <div>
-                           <p class="text-[10px] font-black text-slate-900 leading-tight">${p.name}</p>
-                           <p class="text-[8px] font-bold text-slate-400 uppercase">${p.parties[0]}</p>
-                       </div>
-                   </div>
-               `;
-                   }).join('');
-               }
-
-
-               // 2. NAČTENÍ KOMENTÁŘŮ
-               const commSnap = await db.collection('comments')
-                   .where('scandalId', '==', scandalId)
-                   .orderBy('createdAt', 'desc')
-                   .get();
-
-
-               // 3. RENDER CELÉHO DETAILU
-               view.innerHTML = `
-           <div class="max-w-4xl mx-auto px-4 pb-20 text-left">
-               <button onclick="showDashboard()" class="flex items-center gap-2 text-slate-400 hover:text-slate-950 transition-colors mb-8 text-sm font-bold uppercase tracking-widest">
-                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 19l-7-7 7-7" stroke-width="3"/></svg>
-                   Zpět na přehled
-               </button>
-
-
-               <!-- KARTA KAUZY -->
-               <div class="bg-white p-8 md:p-12 rounded-[40px] shadow-2xl border border-slate-100 mb-12">
-                   <div class="flex gap-2 mb-6">
-                       ${sd.hashtags.map(h => `
-                           <button onclick="filterByHashtag('${h}')" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider hover:bg-blue-600 hover:text-white transition-all">#${h}</button>
-                       `).join('')}
-                   </div>
-                  
-                   <h2 class="text-4xl font-black text-slate-950 leading-tight mb-8">${sd.title}</h2>
-                  
-                   <!-- MINIATURY AKTÉRŮ -->
-                   <div class="mb-8 p-4 bg-slate-50 rounded-3xl border border-slate-100">
-                       <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Aktéři této kauzy</p>
-                       <div class="flex flex-wrap gap-3">
-                           ${politiciansHtml}
-                       </div>
-                   </div>
-
-
-                   <p class="text-slate-700 text-lg leading-relaxed mb-10 whitespace-pre-line">${sd.description}</p>
-                  
-                   <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-                       <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Ověřené zdroje</h4>
-                       <div class="space-y-3">
-                           ${sd.sources.map(src => `
-                               <a href="${src}" target="_blank" class="flex items-center gap-3 text-blue-600 font-semibold hover:text-blue-800 transition-colors truncate">
-                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-width="2"/></svg>
-                                   ${src}
-                               </a>`).join('')}
-                       </div>
-                   </div>
-               </div>
-
-
-               <!-- SEKCE DISKUZE -->
-               <div class="max-w-3xl mx-auto">
-                   <h3 class="text-2xl font-black text-slate-950 mb-8">Veřejná diskuze <span class="text-slate-300 ml-2 font-normal">(${commSnap.size})</span></h3>
-                  
-                   ${currentUser ? `
-                       <div class="mb-12 bg-white p-6 rounded-[32px] shadow-lg border border-slate-100">
-                           <div class="flex gap-4 items-start">
-                               <img src="${currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + currentUser.displayName}" class="w-10 h-10 rounded-full border border-slate-200">
-                               <div class="flex-1">
-                                   <textarea id="commentInput" placeholder="Napište svůj názor..." class="w-full bg-slate-50 border-none rounded-2xl p-4 text-slate-900 focus:ring-2 focus:ring-blue-600 transition-all resize-none mb-4" rows="3"></textarea>
-                                   <div class="flex justify-end">
-                                       <button onclick="addComment('${scandalId}')" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 transition-all">Odeslat</button>
-                                   </div>
-                               </div>
-                           </div>
-                       </div>
-                   ` : `
-                       <div class="bg-slate-100 p-8 rounded-[32px] text-center mb-12 border-2 border-dashed border-slate-200">
-                           <p class="text-slate-500 font-bold mb-0">Pro zapojení do diskuze se musíte přihlásit.</p>
-                       </div>
-                   `}
-
-
-                   <div class="space-y-6">
-                       ${commSnap.docs.map(doc => {
-                   const c = doc.data();
-                   const date = c.createdAt ? new Date(c.createdAt.seconds * 1000).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : 'Právě teď';
-                   return `
-                               <div class="flex gap-4">
-                                   <img src="${c.userPhoto || 'https://ui-avatars.com/api/?name=' + c.userName}" class="w-10 h-10 rounded-full border border-slate-200 shadow-sm">
-                                   <div class="flex-1 bg-white p-6 rounded-3xl rounded-tl-none border border-slate-100 shadow-sm">
-                                       <div class="flex justify-between items-center mb-2">
-                                           <h4 class="font-black text-slate-950 text-sm">${c.userName}</h4>
-                                           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${date}</span>
-                                       </div>
-                                       <p class="text-slate-600 leading-relaxed">${c.text}</p>
-                                   </div>
-                               </div>
-                           `;
-               }).join('')}
-                       ${commSnap.empty ? '<p class="text-center text-slate-400 py-10 italic">Zatím žádné komentáře. Buďte první!</p>' : ''}
-                   </div>
-               </div>
-           </div>`;
-           } catch (e) {
-               console.error(e);
-               alert("Chyba při načítání kauzy.");
-           }
-       }
-
-
-
-
-       async function openAddPoliticianModal(id = null) {
-           editingPoliticianId = id;
-           const modal = document.getElementById('politicianModal');
-           const title = document.getElementById('pModalTitle');
-           if (id) {
-               title.innerText = "Upravit profil";
-               const doc = await db.collection('politicians').doc(id).get();
-               const d = doc.data();
-               document.getElementById('pName').value = d.name;
-               document.getElementById('pPhoto').value = d.photoUrl;
-               document.getElementById('pPhoto2').value = d.photoUrl2 || '';
-               document.getElementById('pBirthDate').value = d.birthDate;
-               document.getElementById('pParties').value = d.parties.join(', ');
-               document.getElementById('pRoles').value = d.roles.join(', ');
-               document.getElementById('pHashtags').value = d.hashtags.join(', ');
-           } else {
-               title.innerText = "Založit nový profil";
-               ['pName', 'pPhoto', 'pBirthDate', 'pParties', 'pRoles', 'pHashtags'].forEach(i => document.getElementById(i).value = '');
-           }
-           modal.classList.remove('hidden');
-       }
-
-
-       function closePoliticianModal() { document.getElementById('politicianModal').classList.add('hidden'); }
-
-
-       async function savePolitician() {
-           const data = {
-               name: document.getElementById('pName').value,
-               photoUrl: document.getElementById('pPhoto').value,
-               photoUrl2: document.getElementById('pPhoto2').value,
-               birthDate: document.getElementById('pBirthDate').value,
-               parties: document.getElementById('pParties').value.split(',').map(s => s.trim()).filter(s => s),
-               roles: document.getElementById('pRoles').value.split(',').map(s => s.trim()).filter(s => s),
-               hashtags: document.getElementById('pHashtags').value.split(',').map(s => s.trim().toLowerCase()).filter(s => s),
-               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-           };
-           if (!data.name) return alert("Jméno je povinné!");
-           try {
-               if (editingPoliticianId) { await db.collection('politicians').doc(editingPoliticianId).update(data); }
-               else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); data.createdBy = currentUser.uid; await db.collection('politicians').add(data); }
-               closePoliticianModal();
-               editingPoliticianId ? showPoliticianDetail(editingPoliticianId) : showDashboard();
-           } catch (e) { alert("Chyba: " + e.message); }
-       }
-
-
-       async function openAddScandalModal(pId, sId = null) {
-           currentPoliticianIdForScandal = pId;
-           editingScandalId = sId;
-           const modal = document.getElementById('scandalModal');
-           const title = document.getElementById('sModalTitle');
-           const delBtn = document.getElementById('btnDeleteScandal');
-
-
-           if (sId) {
-               title.innerText = "Upravit záznam";
-               delBtn.classList.remove('hidden');
-               const doc = await db.collection('scandals').doc(sId).get();
-               const d = doc.data();
-
-
-               // Plníme jen to, co v modalu zůstalo
-               document.getElementById('sTitle').value = d.title || '';
-               document.getElementById('sDescription').value = d.description || '';
-               document.getElementById('sSources').value = (d.sources || []).join(', ');
-               document.getElementById('sHashtags').value = (d.hashtags || []).join(', ');
-
-
-               // BUG FIX: Odstranili jsme řádky s sRating a ratingVal,
-               // protože ty už v HTML neexistují.
-           } else {
-               title.innerText = "Nahlásit novou kauzu";
-               delBtn.classList.add('hidden');
-               document.getElementById('sTitle').value = '';
-               document.getElementById('sDescription').value = '';
-               document.getElementById('sSources').value = '';
-               document.getElementById('sHashtags').value = '';
-           }
-           modal.classList.remove('hidden');
-       }
-       function closeScandalModal() { document.getElementById('scandalModal').classList.add('hidden'); }
-
-
-       async function saveScandal() {
-           const title = document.getElementById('sTitle').value;
-           const description = document.getElementById('sDescription').value;
-           const sources = document.getElementById('sSources').value.split(',').map(s => s.trim()).filter(s => s);
-           const hashtags = document.getElementById('sHashtags').value.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
-
-
-           if (!title || sources.length === 0) return alert("Název a zdroje jsou povinné!");
-
-
-           const data = {
-               title: title,
-               description: description,
-               sources: sources,
-               hashtags: hashtags,
-               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-           };
-
-
-           try {
-               if (editingScandalId) {
-                   await db.collection('scandals').doc(editingScandalId).update(data);
-               } else {
-                   // NOVÁ KAUZA: Nastavíme pole s aktuálním politikem
-                   data.politicianIds = [currentPoliticianIdForScandal];
-                   data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                   data.createdBy = currentUser.uid;
-                   data.averageRating = 0;
-                   data.voteCount = 0;
-                   await db.collection('scandals').add(data);
-               }
-               closeScandalModal();
-               showPoliticianDetail(currentPoliticianIdForScandal);
-           } catch (e) {
-               alert("Chyba při ukládání: " + e.message);
-           }
-       }
-
-
-       async function deleteScandal() {
-           if (!confirm("Opravdu smazat?")) return;
-           await db.collection('scandals').doc(editingScandalId).delete();
-           closeScandalModal();
-           showPoliticianDetail(currentPoliticianIdForScandal);
-       }
-
-
-       document.getElementById('searchInput').addEventListener('input', async (e) => {
-           const term = e.target.value.toLowerCase().trim();
-           if (document.getElementById('view-dashboard').classList.contains('hidden')) {
-               hideAllViews();
-               document.getElementById('view-dashboard').classList.remove('hidden');
-           }
-           if (term === "") { renderPoliticians(allPoliticians); return; }
-
-
-           const results = await Promise.all(allPoliticians.map(async (p) => {
-               const matchPolitician = p.name.toLowerCase().includes(term) ||
-                   p.parties.some(party => party.toLowerCase().includes(term)) ||
-                   p.hashtags.some(tag => tag.toLowerCase().includes(term));
-               if (matchPolitician) return p;
-
-
-               // ZMĚNA: Hledáme v kauzách přes 'array-contains'
-               const scandalSnap = await db.collection('scandals')
-                   .where('politicianIds', 'array-contains', p.id)
-                   .get();
-
-
-               let matchInScandal = false;
-               scandalSnap.forEach(s => {
-                   const sd = s.data();
-                   if (sd.hashtags.some(tag => tag.toLowerCase().includes(term)) || sd.title.toLowerCase().includes(term)) {
-                       matchInScandal = true;
-                   }
-               });
-               return matchInScandal ? p : null;
-           }));
-           renderPoliticians(results.filter(r => r !== null));
-       });
-
-
-       async function deletePolitician(id) {
-           if (!confirm("OPRAVDU SMAZAT? Tato akce navždy odstraní profil politika i VŠECHNY jeho kauzy a hodnocení!")) return;
-
-
-           try {
-               // 1. Smazání všech kauz spojených s politikem
-               const scandalSnap = await db.collection('scandals').where('politicianId', '==', id).get();
-               const batch = db.batch();
-
-
-               scandalSnap.forEach(doc => {
-                   batch.delete(doc.ref);
-               });
-
-
-               // 2. Smazání samotného politika
-               batch.delete(db.collection('politicians').doc(id));
-
-
-               // Provedení všech smazání najednou
-               await batch.commit();
-
-
-               alert("Profil politika byl úspěšně odstraněn.");
-               showDashboard();
-           } catch (e) {
-               console.error("Chyba při mazání:", e);
-               alert("Smazání se nezdařilo: " + e.message);
-           }
-       }
-
-
-       function filterByHashtag(tag) {
-           const searchInput = document.getElementById('searchInput');
-           // Odstraníme případný znak #, pokud by tam byl, a vložíme do vyhledávání
-           const cleanTag = tag.replace('#', '');
-           searchInput.value = cleanTag;
-
-
-           // Ručně vyvoláme událost 'input', aby se spustil tvůj existující vyhledávací kód
-           searchInput.dispatchEvent(new Event('input'));
-
-
-           // Pokud jsme v detailu, searchInput.dispatchEvent nás už díky tvému kódu hodí na dashboard
-       }
-
-
-       async function vote(scandalId, value) {
-           if (!currentUser) return alert("Pro hodnocení se musíš přihlásit!");
-
-
-           const voteId = `${currentUser.uid}_${scandalId}`;
-           const voteRef = db.collection('votes').doc(voteId);
-           const scandalRef = db.collection('scandals').doc(scandalId);
-
-
-           try {
-               await db.runTransaction(async (transaction) => {
-                   const sDoc = await transaction.get(scandalRef);
-                   if (!sDoc.exists) return;
-
-
-                   const voteDoc = await transaction.get(voteRef);
-                   const oldVoteValue = voteDoc.exists ? voteDoc.data().value : null;
-
-
-                   let ratings = sDoc.data().ratings || {}; // Mapa userId: hodnota
-                   ratings[currentUser.uid] = value;
-
-
-                   const allValues = Object.values(ratings);
-                   const average = allValues.reduce((a, b) => a + b, 0) / allValues.length;
-
-
-                   transaction.set(voteRef, { value: value, userId: currentUser.uid, scandalId: scandalId });
-                   transaction.update(scandalRef, {
-                       ratings: ratings,
-                       averageRating: average,
-                       voteCount: allValues.length
-                   });
-               });
-               showPoliticianDetail(currentPoliticianIdForScandal);
-           } catch (e) {
-               console.error("Chyba při hlasování:", e);
-           }
-       }
-
-
-       async function confirmLinking(scandalId, targetId, targetName) {
-           if (!confirm(`Opravdu chcete tuto kauzu přiřadit k: ${targetName}?`)) return;
-
-
-           try {
-               const ref = db.collection('scandals').doc(scandalId);
-               await ref.update({
-                   politicianIds: firebase.firestore.FieldValue.arrayUnion(targetId)
-               });
-
-
-               alert(`Kauza byla úspěšně propojena s: ${targetName}`);
-               document.getElementById('linkModal').remove(); // Zavřít okno
-               showPoliticianDetail(currentPoliticianIdForScandal); // Refresh
-           } catch (e) {
-               console.error(e);
-               alert("Chyba při propojování.");
-           }
-       }
-
-
-       async function linkScandalToAnother(scandalId) {
-           // 1. Vytvoříme jednoduchý modal na počkání
-           const modalHtml = `
-       <div id="linkModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-           <div class="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
-               <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-                   <h3 class="font-black text-xl text-slate-950">Propojit kauzu s...</h3>
-                   <button onclick="document.getElementById('linkModal').remove()" class="text-slate-400 hover:text-slate-950 font-bold">ZAVŘÍT</button>
-               </div>
-               <div class="overflow-y-auto p-4 space-y-2" id="politicianLinkList">
-                   <p class="text-center py-4 text-slate-400">Načítám seznam...</p>
-               </div>
-           </div>
-       </div>
-   `;
-           document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-
-           // 2. Načteme politiky z naší globální proměnné (allPoliticians), kterou už máš v kódu
-           const listContainer = document.getElementById('politicianLinkList');
-           listContainer.innerHTML = allPoliticians.map(p => `
-       <button onclick="confirmLinking('${scandalId}', '${p.id}', '${p.name.replace(/'/g, "\\'")}')"
-               class="w-full flex items-center gap-4 p-3 hover:bg-blue-50 rounded-2xl transition-all group text-left border border-transparent hover:border-blue-100">
-           <img src="${p.photoUrl}" class="w-12 h-12 rounded-xl object-cover shadow-sm">
-           <div>
-               <p class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">${p.name}</p>
-               <p class="text-[10px] uppercase font-black text-slate-400">${p.parties.join(', ')}</p>
-           </div>
-       </button>
-   `).join('');
-       }
-
-
-   </script>
-
-
-   <!-- Footer -->
-   <footer class="bg-slate-950 text-white pt-16 pb-8 border-t-8 border-blue-600">
-       <div class="container mx-auto px-6 text-center md:text-left">
-           <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
-               <div>
-                   <h4 class="text-2xl font-black tracking-tighter uppercase mb-2">Morální<span
-                           class="text-blue-500">Maják</span></h4>
-                   <p class="text-slate-500 text-sm italic">Pro čistší politiku v České republice.</p>
-               </div>
-               <div class="text-xs text-slate-500 max-w-xs leading-relaxed">
-                   Tento projekt využívá veřejně dostupná data k mapování politických kauz. Veškeré informace podléhají
-                   principu presumpce neviny.
-               </div>
-           </div>
-           <div class="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-               <div class="text-slate-600 text-[10px] font-bold uppercase tracking-widest">
-                   © 2026 MORÁLNÍ MAJÁK. Všechna práva vyhrazena.
-               </div>
-               <div class="flex gap-4">
-                   <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                   <span class="text-[10px] font-black uppercase text-slate-500">System Online</span>
-               </div>
-           </div>
-       </div>
-   </footer>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500/30 selection:text-amber-200">
+
+    <!-- Ambient Glowing Background Blobs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-amber-600/15 rounded-full blur-[140px] animate-pulse-glow"></div>
+        <div class="absolute top-1/3 -left-40 w-[400px] h-[400px] bg-orange-700/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-10 right-0 w-[500px] h-[500px] bg-yellow-600/10 rounded-full blur-[150px]"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 w-full">
+
+        <!-- Header / Navigation -->
+        <header class="flex justify-between items-center mb-12">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-white">Detox<span class="text-amber-500">.</span></span>
+            </div>
+
+            <!-- Top Action Buttons -->
+            <div class="flex items-center space-x-3">
+                <button onclick="openSosModal()" class="glass-pill px-4 py-2 rounded-full text-xs font-semibold tracking-wide text-amber-400 hover:text-white hover:bg-amber-500/20 transition-all duration-300 flex items-center space-x-2 border-amber-500/30">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                    </span>
+                    <span>SOS Chuť</span>
+                </button>
+                
+                <button onclick="openSettingsModal()" class="glass-pill p-2.5 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition-all duration-300" title="Nastavení detoxu">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="text-center mb-16">
+            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full glass-pill text-xs font-medium text-neutral-300 mb-6">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <span id="streakBadgeText">Načítání pokroku...</span>
+            </div>
+            
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white via-neutral-100 to-neutral-400">
+                Kávový Detox
+            </h1>
+            <p class="text-neutral-400 text-base sm:text-lg max-w-xl mx-auto font-normal">
+                Sledujte svou cestu k čisté energii, kvalitnějšímu spánku a svobodě bez závislosti na kofeinu.
+            </p>
+
+            <!-- Fitness Ring Progress Section -->
+            <div class="mt-10 relative flex justify-center items-center">
+                <div class="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center">
+                    <!-- SVG Ring -->
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <defs>
+                            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#ff9f0a" />
+                                <stop offset="50%" stop-color="#f59e0b" />
+                                <stop offset="100%" stop-color="#d97706" />
+                            </linearGradient>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <!-- Background Circle Track -->
+                        <circle cx="50" cy="50" r="42" stroke="rgba(255, 255, 255, 0.05)" stroke-width="8" fill="transparent" />
+                        <!-- Active Progress Ring -->
+                        <circle id="progressRingCircle" class="ring-circle" cx="50" cy="50" r="42" 
+                                stroke="url(#ringGradient)" stroke-width="8" 
+                                stroke-linecap="round" fill="transparent" 
+                                stroke-dasharray="263.89" stroke-dashoffset="263.89"
+                                filter="url(#glow)" />
+                    </svg>
+
+                    <!-- Center Ring Text -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <span class="text-xs uppercase tracking-widest text-neutral-400 font-semibold mb-1">Bez kávy</span>
+                        <div class="flex items-baseline justify-center">
+                            <span id="heroDaysCount" class="text-5xl sm:text-6xl font-black text-white tracking-tight">0</span>
+                            <span class="text-lg font-medium text-amber-500 ml-1">dní</span>
+                        </div>
+                        <span id="heroTimeSubtext" class="text-xs text-neutral-400 mt-2 font-mono">0h 0m 0s</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bento Grid Dashboard -->
+        <section class="mb-16">
+            <h2 class="text-xs uppercase tracking-widest text-neutral-400 font-bold mb-6 px-1">Přehled a statistiky</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- Card 1: Days Clean -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Čistý čas</span>
+                        <div class="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="statCleanHours" class="text-3xl font-extrabold text-white tracking-tight">0 hod</div>
+                        <p id="statCleanDetail" class="text-xs text-neutral-400 mt-1">0 hodin celkově bez kofeinu</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Saved Money -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Ušetřeno</span>
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="statMoneySaved" class="text-3xl font-extrabold text-white tracking-tight">0 Kč</div>
+                        <p id="statMoneyDetail" class="text-xs text-neutral-400 mt-1">Při ceně 65 Kč za šálek</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Avoided Cups -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Vynechané šálky</span>
+                        <div class="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="statCupsSkipped" class="text-3xl font-extrabold text-white tracking-tight">0 ks</div>
+                        <p id="statCupsDetail" class="text-xs text-neutral-400 mt-1">Průměrně 2 šálky denně</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Avoided Caffeine -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Ušetřený kofein</span>
+                        <div class="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="statCaffeineSaved" class="text-3xl font-extrabold text-white tracking-tight">0 mg</div>
+                        <p id="statCaffeineDetail" class="text-xs text-neutral-400 mt-1">Počítáno ~95mg na šálek</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Health & Well-being Timeline Section -->
+        <section class="mb-16">
+            <div class="flex items-center justify-between mb-6 px-1">
+                <div>
+                    <h2 class="text-xs uppercase tracking-widest text-neutral-400 font-bold">Fyzické a psychické proměny</h2>
+                    <p class="text-xs text-neutral-400 mt-1">Co se právě děje ve vašem těle (Apple Health Timeline)</p>
+                </div>
+                <span id="unlockedMilestonesBadge" class="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    0 / 6 Milníků
+                </span>
+            </div>
+
+            <!-- Milestones List -->
+            <div class="space-y-4" id="milestonesContainer">
+                <!-- Injected dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- Daily Tip / Encouragement Card -->
+        <section class="glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl"></div>
+            <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <span class="text-xs uppercase tracking-widest text-amber-400 font-semibold">Tipy pro úspěch</span>
+                    <h3 id="dailyTipTitle" class="text-lg font-bold text-white">Nezapomínejte na hydrataci</h3>
+                    <p id="dailyTipText" class="text-sm text-neutral-400 max-w-xl">
+                        Káva často fungovala jako rituál napití. Kdykoliv dostanete chuť na kávu, vypijte velkou sklenici čisté vody s citronem.
+                    </p>
+                </div>
+                <button onclick="getRandomTip()" class="shrink-0 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-all duration-300 border border-white/10">
+                    Další tip ↻
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-neutral-900 py-8 text-center text-xs text-neutral-400">
+        <p>Kávový Detox Tracker • Navrženo v Apple minimalistickém stylu</p>
+        <p class="mt-1 text-neutral-400">Vaše data zůstávají uložena pouze ve vašem prohlížeči.</p>
+    </footer>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300 modal-overlay bg-black/70">
+        <div class="glass-card bg-neutral-900/90 border-neutral-800 w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl transform scale-95 transition-all duration-300" id="settingsModalContent">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white">Nastavení detoxu</h3>
+                <button onclick="closeSettingsModal()" class="text-neutral-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="settingsForm" class="space-y-5" onsubmit="saveSettings(event)">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Datum a čas začátku</label>
+                    <input type="datetime-local" id="inputStartDate" required
+                           class="w-full bg-neutral-800/80 border border-neutral-700/80 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Průměrně šálků denně</label>
+                    <input type="number" id="inputDailyCups" min="1" max="20" step="0.5" required
+                           class="w-full bg-neutral-800/80 border border-neutral-700/80 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Cena jednoho šálku (Kč)</label>
+                    <input type="number" id="inputPricePerCup" min="0" max="1000" required
+                           class="w-full bg-neutral-800/80 border border-neutral-700/80 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm transition-all">
+                </div>
+
+                <div class="pt-4 flex flex-col space-y-3">
+                    <button type="submit" class="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm transition-all duration-300 shadow-lg shadow-amber-500/20">
+                        Uložit změny
+                    </button>
+                    <button type="button" onclick="resetToNow()" class="w-full py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white text-xs font-medium transition-all">
+                        Restartovat detox na dnešek (Právě teď)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SOS Craving Modal -->
+    <div id="sosModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300 modal-overlay bg-black/80">
+        <div class="glass-card bg-neutral-900/95 border-neutral-800 w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl text-center relative overflow-hidden" id="sosModalContent">
+            
+            <button onclick="closeSosModal()" class="absolute top-6 right-6 text-neutral-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <span class="inline-block px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">První pomoc při chuti</span>
+            <h3 class="text-2xl font-bold text-white mb-2">Prodýchejte bažení po kávě</h3>
+            <p class="text-neutral-400 text-xs sm:text-sm mb-8">Neodolatelná chuť trvá průměrně jen 3–5 minut. Zastavte se a soustřeďte se na dech.</p>
+
+            <!-- Breathing Visualizer Container -->
+            <div class="my-8 flex flex-col items-center justify-center">
+                <div class="relative w-44 h-44 flex items-center justify-center">
+                    <!-- Outer pulsating aura -->
+                    <div id="breathingRing" class="absolute inset-0 rounded-full border-2 border-amber-500/40 bg-amber-500/10 transition-all duration-1000"></div>
+                    <!-- Central breathing status -->
+                    <div class="relative z-10 flex flex-col items-center">
+                        <span id="breathingText" class="text-lg font-bold text-white tracking-wide">Nádech</span>
+                        <span id="breathingTimer" class="text-2xl font-black text-amber-400 font-mono mt-1">4</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center space-x-3 mb-8">
+                <button id="breathingToggleBtn" onclick="toggleBreathingExercise()" class="px-6 py-2.5 rounded-full bg-amber-500 text-black font-semibold text-xs tracking-wide hover:bg-amber-400 transition-all">
+                    Spustit cvičení
+                </button>
+            </div>
+
+            <!-- Quick Tips Box -->
+            <div class="text-left bg-white/5 rounded-2xl p-4 border border-white/5">
+                <h4 class="text-xs font-bold uppercase text-neutral-300 mb-2">Rychlé alternativy:</h4>
+                <ul class="text-xs text-neutral-400 space-y-2">
+                    <li class="flex items-center space-x-2">
+                        <span class="text-amber-500">•</span>
+                        <span><strong>Voda s ledem:</strong> Napijte se velké sklenice studené vody.</span>
+                    </li>
+                    <li class="flex items-center space-x-2">
+                        <span class="text-amber-500">•</span>
+                        <span><strong>Fyzický pohyb:</strong> Udělejte 10 dřepů nebo se protáhněte.</span>
+                    </li>
+                    <li class="flex items-center space-x-2">
+                        <span class="text-amber-500">•</span>
+                        <span><strong>Bylinkový čaj:</strong> Zkuste mátový nebo rooibos čaj s citrónem.</span>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        
+        // App State
+        const DEFAULT_SETTINGS = {
+            startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Default: 2 days clean for demo
+            dailyCups: 2,
+            pricePerCup: 65
+        };
+
+        let settings = { ...DEFAULT_SETTINGS };
+
+        // Health Timeline Milestones
+        const MILESTONES = [
+            {
+                id: 'm1',
+                hours: 24,
+                title: '24 Hodin',
+                subtitle: 'Vyčištění a uklidnění srdce',
+                description: 'Hladina kofeinu v krvi klesá na nulu. Tepová frekvence a krevní tlak se stabilizují.',
+                icon: '❤️'
+            },
+            {
+                id: 'm2',
+                hours: 72,
+                title: '3 Dny',
+                subtitle: 'Vrchol abstinenčních příznaků',
+                description: 'Bolesť hlavy ustupuje. Adenosinové receptory v mozku se začínají vracet do normálu.',
+                icon: '🧠'
+            },
+            {
+                id: 'm3',
+                hours: 168, // 7 days
+                title: '7 Dní',
+                subtitle: 'Hlubší spánek a přirozený ranní kmit',
+                description: 'Kvalita REM spánku se výrazně zlepšuje. Probouzíte se svěžejší bez ranní mlhy.',
+                icon: '🌙'
+            },
+            {
+                id: 'm4',
+                hours: 336, // 14 days
+                title: '14 Dní',
+                subtitle: 'Vyrovnaná nálada a hydratace',
+                description: 'Snížení úzkostí a nervozity. Trávicí trakt a pleť lépe vstřebávají hydrataci.',
+                icon: '💧'
+            },
+            {
+                id: 'm5',
+                hours: 720, // 30 days
+                title: '30 Dní',
+                subtitle: 'Bělejší úsměv & méně kortizolu',
+                description: 'Snížení stresového hormonu kortizolu. Zubní sklovina je čistší a světlejší.',
+                icon: '✨'
+            },
+            {
+                id: 'm6',
+                hours: 2160, // 90 days
+                title: '90 Dní',
+                subtitle: 'Plná neurobiologická obnova',
+                description: 'Mozek plně přereguloval receptorový systém. Množství přirozené energie je stabilní po celý den.',
+                icon: '🏆'
+            }
+        ];
+
+        // Motivational Tips Array
+        const TIPS = [
+            { title: 'Nezapomínejte na hydrataci', text: 'Káva fungovala jako rituál napití. Kdykoliv dostanete chuť na kávu, vypijte velkou sklenici čisté vody s citronem.' },
+            { title: 'Kvalitní spánkový rituál', text: 'Bez kofeinu usnete rychleji. Připravte si večer meduňkový čaj a vyhněte se modrému světlu.' },
+            { title: 'Bylinné alternativy', text: 'Vyzkoušejte např. Rooibos, Čekankovou kávu (Špaldovku) nebo kvalitní Zelený čaj pro pozvolné uvolňování energie.' },
+            { title: 'Odpolední pokles energie?', text: 'Místo kávy jděte na 5minutovou procházku na čerstvý vzduch nebo udělejte 10 hlubokých nádechů.' }
+        ];
+
+        let currentTipIndex = 0;
+
+
+        // Load Settings from LocalStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('coffee_detox_settings');
+            if (saved) {
+                try {
+                    settings = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+                } catch (e) {
+                    console.error("Failed to parse settings", e);
+                }
+            }
+        }
+
+        // Save Settings to LocalStorage
+        function saveSettings(e) {
+            e.preventDefault();
+            const dateVal = document.getElementById('inputStartDate').value;
+            const cupsVal = parseFloat(document.getElementById('inputDailyCups').value);
+            const priceVal = parseFloat(document.getElementById('inputPricePerCup').value);
+
+            if (dateVal) {
+                settings.startDate = new Date(dateVal).toISOString();
+            }
+            if (!isNaN(cupsVal) && cupsVal > 0) settings.dailyCups = cupsVal;
+            if (!isNaN(priceVal) && priceVal >= 0) settings.pricePerCup = priceVal;
+
+            localStorage.setItem('coffee_detox_settings', JSON.stringify(settings));
+            closeSettingsModal();
+            updateDashboard();
+        }
+
+        // Reset detox start date to now
+        function resetToNow() {
+            settings.startDate = new Date().toISOString();
+            localStorage.setItem('coffee_detox_settings', JSON.stringify(settings));
+            closeSettingsModal();
+            updateDashboard();
+        }
+
+        // Calculate and Render Dashboard Data
+        function updateDashboard() {
+            const start = new Date(settings.startDate);
+            const now = new Date();
+            const diffMs = Math.max(0, now - start);
+            
+            const totalHours = diffMs / (1000 * 60 * 60);
+            const totalDays = totalHours / 24;
+
+            // Formatted Hero Time
+            const daysClean = Math.floor(totalDays);
+            const hoursClean = Math.floor(totalHours % 24);
+            const minutesClean = Math.floor((diffMs / (1000 * 60)) % 60);
+            const secondsClean = Math.floor((diffMs / 1000) % 60);
+
+            // Update Hero Ring & Counters
+            document.getElementById('heroDaysCount').innerText = daysClean;
+            document.getElementById('heroTimeSubtext').innerText = `${hoursClean}h ${minutesClean}m ${secondsClean}s`;
+
+            // Calculate Dynamic Badge Status based on streak
+            let badgeText = 'První krůčky zdárně zahájeny';
+            if (daysClean >= 90) badgeText = '🏆 Master Detoxu! 90+ dní čisté energie';
+            else if (daysClean >= 30) badgeText = '✨ 30 Dní! Hluboký reset dokončen';
+            else if (daysClean >= 14) badgeText = '⚡ 14 Dní! Energie bez výpadků';
+            else if (daysClean >= 7) badgeText = '🔥 1 Týden bez kofeinu!';
+            else if (daysClean >= 3) badgeText = '🌱 Tělo překonalo nejhorší abstinenční fázi';
+            document.getElementById('streakBadgeText').innerText = badgeText;
+
+            // Fitness Ring Progress (Target: 30 days for 100% loop)
+            const targetDays = 30;
+            const progressPercent = Math.min(100, (totalDays / targetDays) * 100);
+            const circleRadius = 42;
+            const circumference = 2 * Math.PI * circleRadius; // ~263.89
+            const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+            document.getElementById('progressRingCircle').style.strokeDashoffset = strokeDashoffset;
+
+            // Stats Calculations
+            const cupsSkipped = (totalDays * settings.dailyCups);
+            const moneySaved = Math.round(cupsSkipped * settings.pricePerCup);
+            const caffeineSavedMg = Math.round(cupsSkipped * 95);
+
+            document.getElementById('statCleanHours').innerText = `${Math.floor(totalHours)} hod`;
+            document.getElementById('statCleanDetail').innerText = `${daysClean} d, ${hoursClean} h bez kofeinu`;
+
+            document.getElementById('statMoneySaved').innerText = `${moneySaved.toLocaleString('cs-CZ')} Kč`;
+            document.getElementById('statMoneyDetail').innerText = `Při ceně ${settings.pricePerCup} Kč za šálek`;
+
+            document.getElementById('statCupsSkipped').innerText = `${cupsSkipped.toFixed(1)} ks`;
+            document.getElementById('statCupsDetail').innerText = `Průměrně ${settings.dailyCups} šálky denně`;
+
+            document.getElementById('statCaffeineSaved').innerText = `${caffeineSavedMg.toLocaleString('cs-CZ')} mg`;
+
+            // Update Health Timeline
+            renderMilestones(totalHours);
+        }
+
+        // Render Milestones Section (Apple Health Style)
+        function renderMilestones(currentHours) {
+            const container = document.getElementById('milestonesContainer');
+            container.innerHTML = '';
+
+            let unlockedCount = 0;
+
+            MILESTONES.forEach(m => {
+                const isUnlocked = currentHours >= m.hours;
+                if (isUnlocked) unlockedCount++;
+
+                const progressToMilestone = Math.min(100, (currentHours / m.hours) * 100);
+
+                const cardHtml = `
+                    <div class="glass-card rounded-3xl p-5 transition-all duration-300 ${isUnlocked ? 'border-emerald-500/30 bg-emerald-950/10' : 'opacity-80'}">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 ${isUnlocked ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-neutral-800 text-neutral-500'}">
+                                    ${m.icon}
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <h3 class="text-base font-bold text-white">${m.title}</h3>
+                                        <span class="text-xs text-neutral-400">• ${m.subtitle}</span>
+                                    </div>
+                                    <p class="text-xs text-neutral-400 mt-1 leading-relaxed">${m.description}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="shrink-0 flex items-center">
+                                ${isUnlocked ? 
+                                    `<span class="inline-flex items-center space-x-1 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                        <span>Odemčeno</span>
+                                    </span>` : 
+                                    `<span class="text-xs text-neutral-500 font-mono font-medium">${Math.round(progressToMilestone)}%</span>`
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Progress indicator line -->
+                        <div class="w-full bg-neutral-800 h-1.5 rounded-full mt-4 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500 ${isUnlocked ? 'bg-emerald-400' : 'bg-amber-500/60'}" style="width: ${progressToMilestone}%"></div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            document.getElementById('unlockedMilestonesBadge').innerText = `${unlockedCount} / ${MILESTONES.length} Milníků`;
+        }
+
+        // Next Tip Rotation
+        function getRandomTip() {
+            currentTipIndex = (currentTipIndex + 1) % TIPS.length;
+            const tip = TIPS[currentTipIndex];
+            document.getElementById('dailyTipTitle').innerText = tip.title;
+            document.getElementById('dailyTipText').innerText = tip.text;
+        }
+
+
+        // SOS Craving Modal Logic & Breathing Exercise
+        let breathingInterval = null;
+        let isBreathingActive = false;
+        let breathingPhase = 0; // 0: Inhale (4s), 1: Hold (4s), 2: Exhale (4s)
+        let phaseTimer = 4;
+
+        function openSosModal() {
+            const modal = document.getElementById('sosModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('sosModalContent').classList.remove('scale-95');
+            document.getElementById('sosModalContent').classList.add('scale-100');
+        }
+
+        function closeSosModal() {
+            stopBreathingExercise();
+            const modal = document.getElementById('sosModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('sosModalContent').classList.remove('scale-100');
+            document.getElementById('sosModalContent').classList.add('scale-95');
+        }
+
+        function toggleBreathingExercise() {
+            if (isBreathingActive) {
+                stopBreathingExercise();
+            } else {
+                startBreathingExercise();
+            }
+        }
+
+        function startBreathingExercise() {
+            isBreathingActive = true;
+            document.getElementById('breathingToggleBtn').innerText = 'Zastavit cvičení';
+            document.getElementById('breathingToggleBtn').classList.replace('bg-amber-500', 'bg-neutral-700');
+            document.getElementById('breathingToggleBtn').classList.replace('text-black', 'text-white');
+            
+            breathingPhase = 0;
+            phaseTimer = 4;
+            updateBreathingUI();
+
+            breathingInterval = setInterval(() => {
+                phaseTimer--;
+                if (phaseTimer <= 0) {
+                    breathingPhase = (breathingPhase + 1) % 3;
+                    phaseTimer = 4; // 4 seconds per phase
+                }
+                updateBreathingUI();
+            }, 1000);
+        }
+
+        function stopBreathingExercise() {
+            isBreathingActive = false;
+            if (breathingInterval) clearInterval(breathingInterval);
+            document.getElementById('breathingToggleBtn').innerText = 'Spustit cvičení';
+            document.getElementById('breathingToggleBtn').classList.replace('bg-neutral-700', 'bg-amber-500');
+            document.getElementById('breathingToggleBtn').classList.replace('text-white', 'text-black');
+            
+            document.getElementById('breathingText').innerText = 'Připraven';
+            document.getElementById('breathingTimer').innerText = '4';
+            const ring = document.getElementById('breathingRing');
+            ring.style.transform = 'scale(1)';
+            ring.style.opacity = '0.5';
+        }
+
+        function updateBreathingUI() {
+            const textEl = document.getElementById('breathingText');
+            const timerEl = document.getElementById('breathingTimer');
+            const ringEl = document.getElementById('breathingRing');
+
+            timerEl.innerText = phaseTimer;
+
+            if (breathingPhase === 0) { // Inhale
+                textEl.innerText = 'Nádech...';
+                ringEl.style.transform = 'scale(1.3)';
+                ringEl.style.opacity = '0.9';
+                ringEl.className = 'absolute inset-0 rounded-full border-2 border-amber-400 bg-amber-500/20 transition-all duration-1000';
+            } else if (breathingPhase === 1) { // Hold
+                textEl.innerText = 'Zadržte dech';
+                ringEl.style.transform = 'scale(1.3)';
+                ringEl.style.opacity = '0.7';
+                ringEl.className = 'absolute inset-0 rounded-full border-2 border-orange-400 bg-orange-500/20 transition-all duration-1000';
+            } else { // Exhale
+                textEl.innerText = 'Výdech...';
+                ringEl.style.transform = 'scale(0.85)';
+                ringEl.style.opacity = '0.4';
+                ringEl.className = 'absolute inset-0 rounded-full border-2 border-amber-600 bg-amber-600/10 transition-all duration-1000';
+            }
+        }
+
+
+        // Settings Modal Controls
+        function openSettingsModal() {
+            // Populate form fields with current settings
+            const d = new Date(settings.startDate);
+            // Format for datetime-local input
+            const localIso = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            
+            document.getElementById('inputStartDate').value = localIso;
+            document.getElementById('inputDailyCups').value = settings.dailyCups;
+            document.getElementById('inputPricePerCup').value = settings.pricePerCup;
+
+            const modal = document.getElementById('settingsModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('settingsModalContent').classList.remove('scale-95');
+            document.getElementById('settingsModalContent').classList.add('scale-100');
+        }
+
+        function closeSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('settingsModalContent').classList.remove('scale-100');
+            document.getElementById('settingsModalContent').classList.add('scale-95');
+        }
+
+        // App Initialization
+        window.onload = function() {
+            loadSettings();
+            updateDashboard();
+
+            // Live Update tick every second
+            setInterval(updateDashboard, 1000);
+        };
+    </script>
 </body>
-
-
 </html>
-
